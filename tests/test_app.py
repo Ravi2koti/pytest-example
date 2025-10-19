@@ -2,13 +2,22 @@ import sys
 import os
 import pytest
 
-# --- Ensure GitHub Actions can find the root module (main.py) ---
-# Adds the project root folder to Python's import search path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+# --- Add project root directory to sys.path for GitHub Actions runner ---
+# This works even when main.py is in the repository root
+ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if ROOT_DIR not in sys.path:
+    sys.path.insert(0, ROOT_DIR)
 
-# --- Import application functions ---
+# --- Import functions ---
 from myapp.app import multiply_by_two, divide_by_two
-from main import area_of_square
+
+# Use importlib to dynamically import main.py safely
+import importlib.util
+
+main_path = os.path.join(ROOT_DIR, "main.py")
+spec = importlib.util.spec_from_file_location("main", main_path)
+main = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(main)
 
 
 # --- Fixtures ---
@@ -19,7 +28,7 @@ def numbers():
     return [a, b]
 
 
-# --- Test Class ---
+# --- Tests ---
 class TestApp:
 
     def test_division(self, numbers):
@@ -28,11 +37,12 @@ class TestApp:
         assert res == numbers[0]
 
     def test_multiplication(self, numbers):
-        """Extra test for multiply_by_two()"""
+        """Test multiply_by_two()"""
         res = multiply_by_two(numbers[0])
         assert res == numbers[1]
 
     def test_area_student_id(self):
-        """Test area_of_square() from main.py using student ID digits"""
-        side = 70  # last two digits of your student ID (101002870 → 70)
-        expecte
+        """Test area_of_square() dynamically loaded from main.py"""
+        side = 70  # last two digits of your student ID
+        expected = side * side
+        assert main.area_of_square(side) == expected
