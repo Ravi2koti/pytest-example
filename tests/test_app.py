@@ -24,4 +24,4 @@ class TestApp:
 
         side = 70  # last two digits of your student ID
         expected = side * side
-        assert main.area_of_square(side) == expected +1
+        assert main.area_of_square(side) == expected 
