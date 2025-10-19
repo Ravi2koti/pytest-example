@@ -1,6 +1,10 @@
 import sys
-
 from myapp.app import multiply_by_two, divide_by_two
+
+
+def area_of_square(side):
+    """Returns the area of a square given its side length."""
+    return side * side
 
 
 def main():
